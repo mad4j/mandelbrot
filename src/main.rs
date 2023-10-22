@@ -1,6 +1,8 @@
 mod complex;
 mod field_map;
 
+use std::time::Instant;
+
 use complex::Z;
 use field_map::FieldMap;
 
@@ -21,10 +23,16 @@ fn escape_time(c: Z) -> u8 {
 fn main() {
     let field_map = FieldMap::new(Z::new(-1.20, 0.35), Z::new(-1.00, 0.20), 1000, 750);
 
+    let start_time = Instant::now();
+
     let pixels: Vec<u8> = (0..field_map.get_limit())
         .into_par_iter()
-        .map(|p| escape_time(field_map.get_point(p)))
+        .map(|p| field_map.get_point(p))
+        .map(|c| escape_time(c))
         .collect();
+
+    let elapsed_time = start_time.elapsed();
+    println!("Elapsed time: {:?}", elapsed_time);
 
     image::save_buffer(
         "mandelbrot.png",
