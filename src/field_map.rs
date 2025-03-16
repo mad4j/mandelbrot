@@ -35,4 +35,3 @@ impl FieldMap {
         self.re_resolution * self.im_resolution
     }
 }
-
