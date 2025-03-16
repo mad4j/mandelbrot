@@ -27,8 +27,10 @@ fn main() {
 
     let pixels: Vec<u8> = (0..field_map.get_limit())
         .into_par_iter()
-        .map(|p| field_map.get_point(p))
-        .map(|c| escape_time(c))
+        .map(|p| {
+            let c = field_map.get_point(p);
+            escape_time(c)
+        })
         .collect();
 
     let elapsed_time = start_time.elapsed();
