@@ -6,19 +6,19 @@ use num::Complex;
 use rayon::prelude::*;
 use std::time::Instant;
 
+#[inline(always)]
 fn escape_time(c: Complex<f64>) -> u8 {
     let mut z = Complex::new(0.0, 0.0);
-    for i in 0..=255 {
-        if z.norm_sqr() > 4.0 {
-            return 255 - i;
-        }
+    let mut i = 0;
+    while i < 255 && z.norm_sqr() <= 4.0 {
         z = z * z + c;
+        i += 1;
     }
-
-    0
+    255 - i
 }
 
-fn main() {
+fn main() -> Result<(), image::ImageError> {
+
     let field_map = FieldMap::new(
         Complex::new(-1.20, 0.35),
         Complex::new(-1.00, 0.20),
@@ -43,5 +43,5 @@ fn main() {
         field_map.im_resolution as u32,
         image::ColorType::L8,
     )
-    .unwrap();
+
 }
