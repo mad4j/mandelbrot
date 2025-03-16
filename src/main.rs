@@ -1,15 +1,13 @@
-mod complex;
 mod field_map;
 
-use std::time::Instant;
-
-use complex::Z;
 use field_map::FieldMap;
+use num::Complex;
 
 use rayon::prelude::*;
+use std::time::Instant;
 
-fn escape_time(c: Z) -> u8 {
-    let mut z = Z::ZERO;
+fn escape_time(c: Complex<f64>) -> u8 {
+    let mut z = Complex::new(0.0, 0.0);
     for i in 0..=255 {
         if z.norm_sqr() > 4.0 {
             return 255 - i;
@@ -21,16 +19,18 @@ fn escape_time(c: Z) -> u8 {
 }
 
 fn main() {
-    let field_map = FieldMap::new(Z::new(-1.20, 0.35), Z::new(-1.00, 0.20), 1000, 750);
+    let field_map = FieldMap::new(
+        Complex::new(-1.20, 0.35),
+        Complex::new(-1.00, 0.20),
+        1000,
+        750,
+    );
 
     let start_time = Instant::now();
 
     let pixels: Vec<u8> = (0..field_map.get_limit())
         .into_par_iter()
-        .map(|p| {
-            let c = field_map.get_point(p);
-            escape_time(c)
-        })
+        .map(|i| escape_time(field_map.get_point(i)))
         .collect();
 
     let elapsed_time = start_time.elapsed();
