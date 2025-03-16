@@ -1,8 +1,11 @@
 use std::ops;
 
 #[derive(Clone, Copy)]
+/// A complex number in Cartesian form (i.e. x+yi).
 pub struct Z {
+    /// Real part of the complex number
     re: f64,
+    /// Imaginary part of the complex number
     im: f64,
 }
 
