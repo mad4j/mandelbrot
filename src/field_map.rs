@@ -1,6 +1,6 @@
 use num::Complex;
 
-#[derive(Clone)]
+
 pub struct FieldMap {
     pub re_resolution: usize,
     pub im_resolution: usize,
