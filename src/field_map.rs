@@ -8,6 +8,7 @@ pub struct FieldMap {
     pub precomputed_im: Vec<f64>,
 }
 
+
 impl FieldMap {
     pub fn new(
         upper_left: Complex<f64>,
@@ -33,7 +34,8 @@ impl FieldMap {
             precomputed_im,
         }
     }
-
+    
+    #[inline(always)]
     pub fn get_point(&self, index: usize) -> Complex<f64> {
         let (x, y) = (index % self.re_resolution, index / self.re_resolution);
 
