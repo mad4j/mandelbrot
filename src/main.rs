@@ -18,12 +18,11 @@ fn escape_time(c: Complex<f64>) -> u8 {
 }
 
 fn main() -> Result<(), image::ImageError> {
-
     let field_map = FieldMap::new(
         Complex::new(-1.20, 0.35),
         Complex::new(-1.00, 0.20),
-        1000,
-        750,
+        4000,
+        3000,
     );
 
     let start_time = Instant::now();
@@ -43,5 +42,4 @@ fn main() -> Result<(), image::ImageError> {
         field_map.im_resolution as u32,
         image::ColorType::L8,
     )
-
 }
