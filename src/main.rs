@@ -46,18 +46,28 @@ fn main() -> Result<(), image::ImageError> {
 }
 */
 
+mod compute_ocl;
 
 use std::time::Instant;
 
 use anyhow::Result;
-use ocl::ProQue;
+use compute_ocl::MandelbrotOcl;
 use image::{GrayImage, ImageBuffer};
+
+pub trait MandelbrotComputation {
+    fn compute(width: u32, height: u32, max_iters: usize, xmin: f32, xmax: f32, ymin: f32, ymax: f32) -> Result<MandelbrotComputationResult>;
+}
+
+pub struct MandelbrotComputationResult {
+    values: Vec<u8>,
+    elapsed_time: std::time::Duration,
+}
 
 fn main() -> Result<()> {
     // Dimensioni dell'immagine
-    let width = 4000i32;
-    let height = 3000i32;
-    let max_iters = 255i32;
+    let width = 4000;
+    let height = 3000;
+    let max_iters = 255;
 
     // Area del piano complesso da visualizzare
     let xmin = -1.20f32;
@@ -65,83 +75,22 @@ fn main() -> Result<()> {
     let ymin = 0.35f32;
     let ymax = 0.20f32;
 
-    // Codice kernel OpenCL
-    let kernel_src = r#"
-        __kernel void mandelbrot(
-            __global uchar* output,
-            int width,
-            int height,
-            int max_iters,
-            float xmin,
-            float xmax,
-            float ymin,
-            float ymax
-        ) {
-            int x = get_global_id(0);
-            int y = get_global_id(1);
-            
-            if (x >= width || y >= height) return;
-
-            float cx = xmin + (xmax - xmin) * x / (width - 1);
-            float cy = ymin + (ymax - ymin) * y / (height - 1);
-
-            float zx = 0.0f;
-            float zy = 0.0f;
-            int i = 0;
-            
-            while (zx * zx + zy * zy <= 4.0f && i < max_iters) {
-                float xtemp = zx * zx - zy * zy + cx;
-                zy = 2.0f * zx * zy + cy;
-                zx = xtemp;
-                i++;
-            }
-
-            output[y * width + x] = i == max_iters ? 0 : 255-i;
-        }
-    "#;
-
-    // Inizializza l'ambiente OpenCL
-    let pro_que = ProQue::builder()
-        .src(kernel_src)
-        .dims((width as usize, height as usize))
-        .build()?;
-
-    // Crea buffer per l'output
-    let buffer = pro_que.create_buffer::<u8>()?;
-
-    // Prepara il kernel con gli argomenti
-    let kernel = pro_que.kernel_builder("mandelbrot")
-        .arg(&buffer)
-        .arg(&width)
-        .arg(&height)
-        .arg(&max_iters)
-        .arg(xmin)
-        .arg(xmax)
-        .arg(ymin)
-        .arg(ymax)
-        .build()?;
-
-
     let start_time = Instant::now();
 
-    // Esegui il kernel
-    unsafe { kernel.enq()?; }
-
-    // Leggi i risultati dal dispositivo
-    let mut result_vec = vec![0u8; (width * height) as usize];
-    buffer.read(&mut result_vec).enq()?;
+    let result = MandelbrotOcl::compute(width, height, max_iters, xmin, xmax, ymin, ymax)?;
 
     let elapsed_time = start_time.elapsed();
-    println!("Elapsed time: {:?}", elapsed_time);
-    
-    // Crea e salva l'immagine
-    let img: GrayImage = ImageBuffer::from_raw(
+    println!("Total Elapsed time: {:.02?}", elapsed_time);
+    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
+
+     // Crea e salva l'immagine
+     let image: GrayImage = ImageBuffer::from_raw(
         width as u32,
         height as u32,
-        result_vec
+        result.values
     ).unwrap();
 
-    img.save("mandelbrot.png")?;
+    image.save("mandelbrot.png")?;
 
     Ok(())
 }
