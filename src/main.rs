@@ -35,7 +35,6 @@ enum Commands {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-
     // Dimensioni dell'immagine
     let width = 4000;
     let height = 3000;
@@ -50,7 +49,6 @@ fn main() -> Result<()> {
         Commands::Rayon {} => MandelbrotRayon::dump_info()?,
         Commands::Mono {} => MandelbrotMono::dump_info()?,
     }
-
 
     let start_time = Instant::now();
 
