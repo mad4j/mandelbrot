@@ -17,6 +17,11 @@ impl MandelbrotComputation for MandelbrotMono {
     ) -> Result<MandelbrotComputationResult> {
         compute(width, height, max_iters, upper_left, lower_right)
     }
+
+    fn dump_info() -> Result<()> {
+        println!("MandelbrotMono computation info: Single core computation.");
+        Ok(())
+    }
 }
 
 #[inline(always)]
