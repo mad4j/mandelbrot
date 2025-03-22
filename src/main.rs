@@ -1,6 +1,6 @@
+mod compute_mono;
 mod compute_ocl;
 mod compute_rayon;
-mod compute_mono;
 mod field_map;
 
 use clap::{Parser, Subcommand};
@@ -49,33 +49,56 @@ pub struct MandelbrotComputationResult {
 
 pub fn dump_opencl_info() -> Result<()> {
     let platforms = Platform::list();
-    
+
     for (p_idx, platform) in platforms.iter().enumerate() {
-        println!("Platform {}: {:?}", p_idx, platform.name()?);
-        println!("  Vendor: {:?}", platform.vendor()?);
+        println!("Platform #{}: {}", p_idx, platform.name()?);
+        println!("  Vendor: {}", platform.vendor()?);
         println!("  Version: {}", platform.version()?);
-        println!("  Profile: {:?}", platform.profile()?);
-        println!("  Extensions: {:?}", platform.extensions()?);
-        
+        println!("  Profile: {}", platform.profile()?);
+
         let devices = Device::list_all(platform)?;
-        
+
         for (d_idx, device) in devices.iter().enumerate() {
-            println!("  Device {}: {:?}", d_idx, device.name()?);
-            println!("    Vendor: {:?}", device.vendor()?);
+            println!("  Device {}: {}", d_idx, device.name()?);
+            println!("    Vendor: {}", device.vendor()?);
             println!("    Version: {}", device.version()?);
-            println!("    Type: {:?}", device.info(DeviceInfo::Type)?);
+            println!("    Type: {}", device.info(DeviceInfo::Type)?);
             println!("    Profile: {}", device.info(DeviceInfo::Profile)?);
-            println!("    Max Compute Units: {:?}", device.info(DeviceInfo::MaxComputeUnits)?);
-            println!("    Max Work Group Size: {:?}", device.info(DeviceInfo::MaxWorkGroupSize)?);
-            println!("    Max Work Item Dimensions: {:?}", device.info(DeviceInfo::MaxWorkItemDimensions)?);
-            println!("    Max Work Item Sizes: {:?}", device.info(DeviceInfo::MaxWorkItemSizes)?);
-            println!("    Max Clock Frequency: {:?}", device.info(DeviceInfo::MaxClockFrequency)?);
-            println!("    Max Memory Allocation Size: {:?}", device.info(DeviceInfo::MaxMemAllocSize)?);
-            println!("    Global Memory Size: {:?}", device.info(DeviceInfo::GlobalMemSize)?);
-            println!("    Local Memory Size: {:?}", device.info(DeviceInfo::LocalMemSize)?);
+            println!(
+                "    Max Compute Units: {}",
+                device.info(DeviceInfo::MaxComputeUnits)?
+            );
+            println!(
+                "    Max Work Group Size: {}",
+                device.info(DeviceInfo::MaxWorkGroupSize)?
+            );
+            println!(
+                "    Max Work Item Dimensions: {}",
+                device.info(DeviceInfo::MaxWorkItemDimensions)?
+            );
+            println!(
+                "    Max Work Item Sizes: {}",
+                device.info(DeviceInfo::MaxWorkItemSizes)?
+            );
+            println!(
+                "    Max Clock Frequency: {}",
+                device.info(DeviceInfo::MaxClockFrequency)?
+            );
+            println!(
+                "    Max Memory Allocation Size: {}",
+                device.info(DeviceInfo::MaxMemAllocSize)?
+            );
+            println!(
+                "    Global Memory Size: {}",
+                device.info(DeviceInfo::GlobalMemSize)?
+            );
+            println!(
+                "    Local Memory Size: {}",
+                device.info(DeviceInfo::LocalMemSize)?
+            );
         }
     }
-    
+
     Ok(())
 }
 
@@ -97,15 +120,14 @@ fn main() -> Result<()> {
 
     let result = match &cli.command {
         Commands::Ocl {} => {
-                        MandelbrotOcl::compute(width, height, max_iters, upper_left, lower_right)?
-            }
+            MandelbrotOcl::compute(width, height, max_iters, upper_left, lower_right)?
+        }
         Commands::Rayon {} => {
-                MandelbrotRayon::compute(width, height, max_iters, upper_left, lower_right)?
-            }
+            MandelbrotRayon::compute(width, height, max_iters, upper_left, lower_right)?
+        }
         Commands::Mono {} => {
-                MandelbrotMono::compute(width, height, max_iters, upper_left, lower_right)?
-            }
-
+            MandelbrotMono::compute(width, height, max_iters, upper_left, lower_right)?
+        }
     };
 
     let elapsed_time = start_time.elapsed();
