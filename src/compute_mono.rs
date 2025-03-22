@@ -1,6 +1,6 @@
+use anyhow::Result;
 use field_map::FieldMap;
 use num::Complex;
-use anyhow::Result;
 use std::time::Instant;
 
 use crate::{field_map, MandelbrotComputation, MandelbrotComputationResult};
