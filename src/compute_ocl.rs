@@ -1,20 +1,33 @@
-
 use std::time::Instant;
 
 use anyhow::Result;
+use num::Complex;
 use ocl::ProQue;
 
 use crate::{MandelbrotComputation, MandelbrotComputationResult};
 
 pub struct MandelbrotOcl {}
 
-
 impl MandelbrotComputation for MandelbrotOcl {
-    fn compute(width: u32, height: u32, max_iters: usize, xmin: f32, xmax: f32, ymin: f32, ymax: f32) -> Result<MandelbrotComputationResult> {
-        
+    fn compute(
+        width: u32,
+        height: u32,
+        max_iters: usize,
+        upper_left: Complex<f32>,
+        lower_right: Complex<f32>,
+    ) -> Result<MandelbrotComputationResult> {
+        // Converti i parametri in tipi OpenCL
         let width = width as i32;
         let height = height as i32;
         let max_iters = max_iters as i32;
+
+        // Calcola i valori di xmin, xmax, ymin e ymax
+        let xmin = upper_left.re;
+        let xmax = lower_right.re;
+
+        // Inverti ymin e ymax per mantenere la coerenza con il piano cartesiano
+        let ymin = upper_left.im;
+        let ymax = lower_right.im;
 
         // Codice kernel OpenCL
         let kernel_src = r#"
@@ -63,7 +76,8 @@ impl MandelbrotComputation for MandelbrotOcl {
         let start_time = Instant::now();
 
         // Prepara il kernel con gli argomenti
-        let kernel = pro_que.kernel_builder("mandelbrot")
+        let kernel = pro_que
+            .kernel_builder("mandelbrot")
             .arg(&buffer)
             .arg(&width)
             .arg(&height)
@@ -75,18 +89,19 @@ impl MandelbrotComputation for MandelbrotOcl {
             .build()?;
 
         // Esegui il kernel
-        unsafe { kernel.enq()?; }
+        unsafe {
+            kernel.enq()?;
+        }
 
         // Leggi i risultati dal dispositivo
         let mut result_vec = vec![0u8; (width * height) as usize];
         buffer.read(&mut result_vec).enq()?;
 
         let elapsed_time = start_time.elapsed();
-        println!("Elapsed time: {:?}", elapsed_time);
-        
+
         Ok(MandelbrotComputationResult {
             values: result_vec,
             elapsed_time,
         })
-    }       
+    }
 }
