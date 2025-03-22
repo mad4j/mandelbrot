@@ -20,6 +20,11 @@ impl MandelbrotComputation for MandelbrotRayon {
     ) -> Result<MandelbrotComputationResult> {
         compute(width, height, max_iters, upper_left, lower_right)
     }
+
+    fn dump_info() -> Result<()> {
+        println!("MandelbrotRayon computation info: Parallelized using Rayon.");
+        Ok(())
+    }
 }
 
 #[inline(always)]

@@ -5,7 +5,6 @@ mod field_map;
 
 use clap::{Parser, Subcommand};
 use compute_mono::MandelbrotMono;
-use ocl::{core::DeviceInfo, Device, Platform};
 
 use std::time::Instant;
 
@@ -40,6 +39,8 @@ pub trait MandelbrotComputation {
         upper_left: Complex<f32>,
         lower_right: Complex<f32>,
     ) -> Result<MandelbrotComputationResult>;
+
+    fn dump_info() -> Result<()>;
 }
 
 pub struct MandelbrotComputationResult {
@@ -47,65 +48,9 @@ pub struct MandelbrotComputationResult {
     elapsed_time: std::time::Duration,
 }
 
-pub fn dump_opencl_info() -> Result<()> {
-    let platforms = Platform::list();
-
-    for (p_idx, platform) in platforms.iter().enumerate() {
-        println!("Platform #{}: {}", p_idx, platform.name()?);
-        println!("  Vendor: {}", platform.vendor()?);
-        println!("  Version: {}", platform.version()?);
-        println!("  Profile: {}", platform.profile()?);
-
-        let devices = Device::list_all(platform)?;
-
-        for (d_idx, device) in devices.iter().enumerate() {
-            println!("  Device {}: {}", d_idx, device.name()?);
-            println!("    Vendor: {}", device.vendor()?);
-            println!("    Version: {}", device.version()?);
-            println!("    Type: {}", device.info(DeviceInfo::Type)?);
-            println!("    Profile: {}", device.info(DeviceInfo::Profile)?);
-            println!(
-                "    Max Compute Units: {}",
-                device.info(DeviceInfo::MaxComputeUnits)?
-            );
-            println!(
-                "    Max Work Group Size: {}",
-                device.info(DeviceInfo::MaxWorkGroupSize)?
-            );
-            println!(
-                "    Max Work Item Dimensions: {}",
-                device.info(DeviceInfo::MaxWorkItemDimensions)?
-            );
-            println!(
-                "    Max Work Item Sizes: {}",
-                device.info(DeviceInfo::MaxWorkItemSizes)?
-            );
-            println!(
-                "    Max Clock Frequency: {}",
-                device.info(DeviceInfo::MaxClockFrequency)?
-            );
-            println!(
-                "    Max Memory Allocation Size: {}",
-                device.info(DeviceInfo::MaxMemAllocSize)?
-            );
-            println!(
-                "    Global Memory Size: {}",
-                device.info(DeviceInfo::GlobalMemSize)?
-            );
-            println!(
-                "    Local Memory Size: {}",
-                device.info(DeviceInfo::LocalMemSize)?
-            );
-        }
-    }
-
-    Ok(())
-}
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    dump_opencl_info()?;
 
     // Dimensioni dell'immagine
     let width = 4000;
@@ -116,6 +61,14 @@ fn main() -> Result<()> {
     let upper_left = Complex::<f32>::new(-1.20, 0.35);
     let lower_right = Complex::<f32>::new(-1.00, 0.20);
 
+
+    match &cli.command {
+        Commands::Ocl {} => MandelbrotOcl::dump_info()?,
+        Commands::Rayon {} => MandelbrotRayon::dump_info()?,
+        Commands::Mono {} => MandelbrotMono::dump_info()?,
+    }
+
+    
     let start_time = Instant::now();
 
     let result = match &cli.command {

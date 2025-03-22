@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use anyhow::Result;
 use num::Complex;
-use ocl::{Platform, ProQue};
+use ocl::{core::DeviceInfo, Device, Platform, ProQue};
 
 use crate::{MandelbrotComputation, MandelbrotComputationResult};
 
@@ -104,5 +104,63 @@ impl MandelbrotComputation for MandelbrotOcl {
             values: result_vec,
             elapsed_time,
         })
+    }
+
+    fn dump_info() -> Result<()> {
+
+        println!("MandelbrotRayon computation info: Parallelized using OpenCL.");
+
+        let platforms = Platform::list();
+
+        for (p_idx, platform) in platforms.iter().enumerate() {
+            println!("Platform #{}: {}", p_idx, platform.name()?);
+            println!("  Vendor: {}", platform.vendor()?);
+            println!("  Version: {}", platform.version()?);
+            println!("  Profile: {}", platform.profile()?);
+
+            let devices = Device::list_all(platform)?;
+
+            for (d_idx, device) in devices.iter().enumerate() {
+                println!("  Device {}: {}", d_idx, device.name()?);
+                println!("    Vendor: {}", device.vendor()?);
+                println!("    Version: {}", device.version()?);
+                println!("    Type: {}", device.info(DeviceInfo::Type)?);
+                println!("    Profile: {}", device.info(DeviceInfo::Profile)?);
+                println!(
+                    "    Max Compute Units: {}",
+                    device.info(DeviceInfo::MaxComputeUnits)?
+                );
+                println!(
+                    "    Max Work Group Size: {}",
+                    device.info(DeviceInfo::MaxWorkGroupSize)?
+                );
+                println!(
+                    "    Max Work Item Dimensions: {}",
+                    device.info(DeviceInfo::MaxWorkItemDimensions)?
+                );
+                println!(
+                    "    Max Work Item Sizes: {}",
+                    device.info(DeviceInfo::MaxWorkItemSizes)?
+                );
+                println!(
+                    "    Max Clock Frequency: {}",
+                    device.info(DeviceInfo::MaxClockFrequency)?
+                );
+                println!(
+                    "    Max Memory Allocation Size: {}",
+                    device.info(DeviceInfo::MaxMemAllocSize)?
+                );
+                println!(
+                    "    Global Memory Size: {}",
+                    device.info(DeviceInfo::GlobalMemSize)?
+                );
+                println!(
+                    "    Local Memory Size: {}",
+                    device.info(DeviceInfo::LocalMemSize)?
+                );
+            }
+        }
+
+        Ok(())
     }
 }
