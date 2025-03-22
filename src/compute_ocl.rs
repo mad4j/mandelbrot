@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use anyhow::Result;
 use num::Complex;
-use ocl::ProQue;
+use ocl::{Platform, ProQue};
 
 use crate::{MandelbrotComputation, MandelbrotComputationResult};
 
@@ -16,7 +16,7 @@ impl MandelbrotComputation for MandelbrotOcl {
         upper_left: Complex<f32>,
         lower_right: Complex<f32>,
     ) -> Result<MandelbrotComputationResult> {
-        // Converti i parametri in tipi OpenCL
+        // Convert the parameters to OpenCL types
         let width = width as i32;
         let height = height as i32;
         let max_iters = max_iters as i32;
@@ -46,8 +46,8 @@ impl MandelbrotComputation for MandelbrotOcl {
                 
                 if (x >= width || y >= height) return;
 
-                float cx = xmin + (xmax - xmin) * x / (width - 1);
-                float cy = ymin + (ymax - ymin) * y / (height - 1);
+                float cx = xmin + (xmax - xmin) * x / width;
+                float cy = ymin + (ymax - ymin) * y / height;
 
                 float zx = 0.0f;
                 float zy = 0.0f;
@@ -60,12 +60,13 @@ impl MandelbrotComputation for MandelbrotOcl {
                     i++;
                 }
 
-                output[y * width + x] = i == max_iters ? 0 : 255-i;
+                output[y * width + x] = max_iters-i;
             }
         "#;
 
-        // Inizializza l'ambiente OpenCL
+        // Initialize the OpenCL environment
         let pro_que = ProQue::builder()
+            .platform(Platform::default())
             .src(kernel_src)
             .dims((width as usize, height as usize))
             .build()?;
