@@ -1,9 +1,10 @@
 use anyhow::Result;
-use field_map::FieldMap;
+
 use num::Complex;
 use std::time::Instant;
 
-use crate::{field_map, MandelbrotComputation, MandelbrotComputationResult};
+use crate::mandelbrot_utils::{FieldMap, MandelbrotComputation, MandelbrotComputationResult};
+
 
 pub struct MandelbrotMono {}
 

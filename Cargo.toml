@@ -12,3 +12,4 @@ rayon = "1.10.0"
 ocl = "0.19.7"
 anyhow = "1.0.97"
 clap = { version = "4.5.32", features = ["derive"] }
+human_bytes = "0.4.3"

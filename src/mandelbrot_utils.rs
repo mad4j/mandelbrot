@@ -1,6 +1,25 @@
-use std::f32;
 
 use num::Complex;
+use anyhow::Result;
+
+
+pub trait MandelbrotComputation {
+    fn compute(
+        width: u32,
+        height: u32,
+        max_iters: usize,
+        upper_left: Complex<f32>,
+        lower_right: Complex<f32>,
+    ) -> Result<MandelbrotComputationResult>;
+
+    fn dump_info() -> Result<()>;
+}
+
+pub struct MandelbrotComputationResult {
+    pub values: Vec<u8>,
+    pub elapsed_time: std::time::Duration,
+}
+
 
 pub struct FieldMap {
     pub re_resolution: usize,

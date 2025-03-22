@@ -4,7 +4,8 @@ use anyhow::Result;
 use num::Complex;
 use ocl::{core::DeviceInfo, Device, Platform, ProQue};
 
-use crate::{MandelbrotComputation, MandelbrotComputationResult};
+use crate::mandelbrot_utils::{MandelbrotComputation, MandelbrotComputationResult};
+
 
 pub struct MandelbrotOcl {}
 
