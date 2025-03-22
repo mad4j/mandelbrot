@@ -32,6 +32,34 @@ enum Commands {
     Rayon {},
 }
 
+
+fn processing_values<T: MandelbrotComputation>(
+    width: u32,
+    height: u32,
+    max_iters: usize,
+    upper_left: Complex<f32>,
+    lower_right: Complex<f32>,
+) -> Result<()> {
+
+    T::dump_info()?;
+
+    let start_time = Instant::now();
+
+    let result = T::compute(width, height, max_iters, upper_left, lower_right)?;
+
+    let elapsed_time = start_time.elapsed();
+    println!("Total Elapsed time: {:.02?}", elapsed_time);
+    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
+
+    // Crea e salva l'immagine
+    let image: GrayImage =
+        ImageBuffer::from_raw(width as u32, height as u32, result.values).unwrap();
+
+    image.save("mandelbrot.png")?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -45,34 +73,10 @@ fn main() -> Result<()> {
     let lower_right = Complex::<f32>::new(-1.00, 0.20);
 
     match &cli.command {
-        Commands::Ocl {} => MandelbrotOcl::dump_info()?,
-        Commands::Rayon {} => MandelbrotRayon::dump_info()?,
-        Commands::Mono {} => MandelbrotMono::dump_info()?,
-    }
-
-    let start_time = Instant::now();
-
-    let result = match &cli.command {
-        Commands::Ocl {} => {
-            MandelbrotOcl::compute(width, height, max_iters, upper_left, lower_right)?
-        }
-        Commands::Rayon {} => {
-            MandelbrotRayon::compute(width, height, max_iters, upper_left, lower_right)?
-        }
-        Commands::Mono {} => {
-            MandelbrotMono::compute(width, height, max_iters, upper_left, lower_right)?
-        }
-    };
-
-    let elapsed_time = start_time.elapsed();
-    println!("Total Elapsed time: {:.02?}", elapsed_time);
-    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
-
-    // Crea e salva l'immagine
-    let image: GrayImage =
-        ImageBuffer::from_raw(width as u32, height as u32, result.values).unwrap();
-
-    image.save("mandelbrot.png")?;
+        Commands::Mono {} => processing_values::<MandelbrotMono>(width, height, max_iters, upper_left, lower_right)?,
+        Commands::Ocl {} => processing_values::<MandelbrotOcl>(width, height, max_iters, upper_left, lower_right)?,
+        Commands::Rayon {} => processing_values::<MandelbrotRayon>(width, height, max_iters, upper_left, lower_right)?,
+    }  
 
     Ok(())
 }
