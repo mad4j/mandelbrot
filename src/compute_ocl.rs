@@ -1,7 +1,5 @@
-
-use std::time::Instant;
 use human_bytes::human_bytes;
-
+use std::time::Instant;
 
 use anyhow::Result;
 use num::Complex;
@@ -152,15 +150,21 @@ impl MandelbrotComputation for MandelbrotOcl {
                 );
                 println!(
                     "    Max Memory Allocation Size: {}",
-                    human_bytes(extract_u64(device.info(DeviceInfo::MaxMemAllocSize)?).unwrap_or(0) as f64)
+                    human_bytes(
+                        extract_u64(device.info(DeviceInfo::MaxMemAllocSize)?).unwrap_or(0) as f64
+                    )
                 );
                 println!(
                     "    Global Memory Size: {}",
-                    human_bytes(extract_u64(device.info(DeviceInfo::GlobalMemSize)?).unwrap_or(0) as f64)
+                    human_bytes(
+                        extract_u64(device.info(DeviceInfo::GlobalMemSize)?).unwrap_or(0) as f64
+                    )
                 );
                 println!(
                     "    Local Memory Size: {}",
-                    human_bytes(extract_u64(device.info(DeviceInfo::LocalMemSize)?).unwrap_or(0) as f64)
+                    human_bytes(
+                        extract_u64(device.info(DeviceInfo::LocalMemSize)?).unwrap_or(0) as f64
+                    )
                 );
             }
         }
@@ -180,5 +184,5 @@ fn extract_u64(i: DeviceInfoResult) -> Option<u64> {
         DeviceInfoResult::GlobalMemSize(v) => Some(v),
         DeviceInfoResult::LocalMemSize(v) => Some(v),
         _ => None,
-            }
+    }
 }
