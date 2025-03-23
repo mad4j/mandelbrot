@@ -1,4 +1,3 @@
-
 use num::Complex;
 
 use anyhow::Result;
@@ -7,7 +6,6 @@ use rayon::prelude::*;
 use std::time::Instant;
 
 use crate::mandelbrot_utils::{FieldMap, MandelbrotComputation, MandelbrotComputationResult};
-
 
 pub struct MandelbrotRayon {}
 

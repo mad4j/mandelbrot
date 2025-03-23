@@ -5,7 +5,6 @@ use std::time::Instant;
 
 use crate::mandelbrot_utils::{FieldMap, MandelbrotComputation, MandelbrotComputationResult};
 
-
 pub struct MandelbrotMono {}
 
 impl MandelbrotComputation for MandelbrotMono {

@@ -1,7 +1,5 @@
-
-use num::Complex;
 use anyhow::Result;
-
+use num::Complex;
 
 pub trait MandelbrotComputation {
     fn compute(
@@ -19,7 +17,6 @@ pub struct MandelbrotComputationResult {
     pub values: Vec<u8>,
     pub elapsed_time: std::time::Duration,
 }
-
 
 pub struct FieldMap {
     pub re_resolution: usize,

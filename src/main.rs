@@ -32,7 +32,6 @@ enum Commands {
     Rayon {},
 }
 
-
 fn processing_values<T: MandelbrotComputation>(
     width: u32,
     height: u32,
@@ -40,7 +39,6 @@ fn processing_values<T: MandelbrotComputation>(
     upper_left: Complex<f32>,
     lower_right: Complex<f32>,
 ) -> Result<()> {
-
     T::dump_info()?;
 
     let start_time = Instant::now();
@@ -73,10 +71,16 @@ fn main() -> Result<()> {
     let lower_right = Complex::<f32>::new(-1.00, 0.20);
 
     match &cli.command {
-        Commands::Mono {} => processing_values::<MandelbrotMono>(width, height, max_iters, upper_left, lower_right)?,
-        Commands::Ocl {} => processing_values::<MandelbrotOcl>(width, height, max_iters, upper_left, lower_right)?,
-        Commands::Rayon {} => processing_values::<MandelbrotRayon>(width, height, max_iters, upper_left, lower_right)?,
-    }  
+        Commands::Mono {} => {
+            processing_values::<MandelbrotMono>(width, height, max_iters, upper_left, lower_right)?
+        }
+        Commands::Ocl {} => {
+            processing_values::<MandelbrotOcl>(width, height, max_iters, upper_left, lower_right)?
+        }
+        Commands::Rayon {} => {
+            processing_values::<MandelbrotRayon>(width, height, max_iters, upper_left, lower_right)?
+        }
+    }
 
     Ok(())
 }

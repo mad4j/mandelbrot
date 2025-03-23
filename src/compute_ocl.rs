@@ -1,11 +1,16 @@
+
 use std::time::Instant;
+use human_bytes::human_bytes;
+
 
 use anyhow::Result;
 use num::Complex;
-use ocl::{core::DeviceInfo, Device, Platform, ProQue};
+use ocl::{
+    core::{DeviceInfo, DeviceInfoResult},
+    Device, Platform, ProQue,
+};
 
 use crate::mandelbrot_utils::{MandelbrotComputation, MandelbrotComputationResult};
-
 
 pub struct MandelbrotOcl {}
 
@@ -108,7 +113,6 @@ impl MandelbrotComputation for MandelbrotOcl {
     }
 
     fn dump_info() -> Result<()> {
-
         println!("MandelbrotRayon computation info: Parallelized using OpenCL.");
 
         let platforms = Platform::list();
@@ -116,8 +120,7 @@ impl MandelbrotComputation for MandelbrotOcl {
         for (p_idx, platform) in platforms.iter().enumerate() {
             println!("Platform #{}: {}", p_idx, platform.name()?);
             println!("  Vendor: {}", platform.vendor()?);
-            println!("  Version: {}", platform.version()?);
-            println!("  Profile: {}", platform.profile()?);
+            println!("  Version: {} {}", platform.version()?, platform.profile()?);
 
             let devices = Device::list_all(platform)?;
 
@@ -149,19 +152,33 @@ impl MandelbrotComputation for MandelbrotOcl {
                 );
                 println!(
                     "    Max Memory Allocation Size: {}",
-                    device.info(DeviceInfo::MaxMemAllocSize)?
+                    human_bytes(extract_u64(device.info(DeviceInfo::MaxMemAllocSize)?).unwrap_or(0) as f64)
                 );
                 println!(
                     "    Global Memory Size: {}",
-                    device.info(DeviceInfo::GlobalMemSize)?
+                    human_bytes(extract_u64(device.info(DeviceInfo::GlobalMemSize)?).unwrap_or(0) as f64)
                 );
                 println!(
                     "    Local Memory Size: {}",
-                    device.info(DeviceInfo::LocalMemSize)?
+                    human_bytes(extract_u64(device.info(DeviceInfo::LocalMemSize)?).unwrap_or(0) as f64)
                 );
             }
         }
 
         Ok(())
     }
+}
+
+fn extract_u64(i: DeviceInfoResult) -> Option<u64> {
+    match i {
+        DeviceInfoResult::MaxComputeUnits(v) => Some(v as u64),
+        DeviceInfoResult::MaxWorkGroupSize(v) => Some(v as u64),
+        DeviceInfoResult::MaxWorkItemDimensions(v) => Some(v as u64),
+        DeviceInfoResult::MaxWorkItemSizes(_) => None,
+        DeviceInfoResult::MaxClockFrequency(v) => Some(v as u64),
+        DeviceInfoResult::MaxMemAllocSize(v) => Some(v),
+        DeviceInfoResult::GlobalMemSize(v) => Some(v),
+        DeviceInfoResult::LocalMemSize(v) => Some(v),
+        _ => None,
+            }
 }
