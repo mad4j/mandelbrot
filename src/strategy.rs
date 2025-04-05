@@ -11,23 +11,6 @@ pub struct ComputationParams {
     pub lower_right: Complex<f32>,
 }
 
-impl ComputationParams {
-    pub fn new(
-        width: u32,
-        height: u32,
-        max_iters: usize,
-        upper_left: Complex<f32>,
-        lower_right: Complex<f32>,
-    ) -> Self {
-        ComputationParams {
-            width,
-            height,
-            max_iters,
-            upper_left,
-            lower_right,
-        }
-    }
-}
 
 pub trait ComputationStrategy {
     fn dump_info(&self) -> Result<()>;

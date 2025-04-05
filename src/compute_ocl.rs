@@ -25,7 +25,6 @@ impl MandelbrotOcl {
 }
 
 impl ComputationStrategy for MandelbrotOcl {
-
     fn setup(&mut self) -> Result<()> {
         Ok(())
     }
