@@ -1,46 +1,55 @@
 use human_bytes::human_bytes;
-use std::time::Instant;
 
 use anyhow::Result;
-use num::Complex;
 use ocl::{
     core::{DeviceInfo, DeviceInfoResult},
     Device, Platform, ProQue,
 };
 
-use crate::mandelbrot_utils::{ComputationStrategy, ComputationResult};
+use crate::strategy::{ComputationParams, ComputationStrategy};
 
-pub struct MandelbrotOcl {}
-
+pub struct MandelbrotOcl {
+    params: Option<ComputationParams>,
+    buffer: Option<ocl::Buffer<u8>>,
+    kernel: Option<ocl::Kernel>,
+}
 
 impl MandelbrotOcl {
     pub fn new() -> Self {
-        MandelbrotOcl {}
+        MandelbrotOcl {
+            params: None,
+            buffer: None,
+            kernel: None,
+        }
     }
 }
 
-
 impl ComputationStrategy for MandelbrotOcl {
-    fn compute(
-        &self,
-        width: u32,
-        height: u32,
-        max_iters: usize,
-        upper_left: Complex<f32>,
-        lower_right: Complex<f32>,
-    ) -> Result<ComputationResult> {
+
+    fn setup(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    fn init(&mut self, params: &ComputationParams) -> Result<()> {
+        self.params = Some(params.clone());
+
+        let params = self
+            .params
+            .as_ref()
+            .expect("Computation parameters not initialized.");
+
         // Convert the parameters to OpenCL types
-        let width = width as i32;
-        let height = height as i32;
-        let max_iters = max_iters as i32;
+        let width = params.width as i32;
+        let height = params.height as i32;
+        let max_iters = params.max_iters as i32;
 
         // Calcola i valori di xmin, xmax, ymin e ymax
-        let xmin = upper_left.re;
-        let xmax = lower_right.re;
+        let xmin = params.upper_left.re;
+        let xmax = params.lower_right.re;
 
         // Inverti ymin e ymax per mantenere la coerenza con il piano cartesiano
-        let ymin = upper_left.im;
-        let ymax = lower_right.im;
+        let ymin = params.upper_left.im;
+        let ymax = params.lower_right.im;
 
         // Codice kernel OpenCL
         let kernel_src = r#"
@@ -77,17 +86,15 @@ impl ComputationStrategy for MandelbrotOcl {
             }
         "#;
 
-        // Initialize the OpenCL environment
+        // initialize the OpenCL environment
         let pro_que = ProQue::builder()
             .platform(Platform::default())
             .src(kernel_src)
             .dims((width as usize, height as usize))
             .build()?;
 
-        // Crea buffer per l'output
+        // create output buffer
         let buffer = pro_que.create_buffer::<u8>()?;
-
-        let start_time = Instant::now();
 
         // Prepara il kernel con gli argomenti
         let kernel = pro_que
@@ -102,21 +109,33 @@ impl ComputationStrategy for MandelbrotOcl {
             .arg(ymax)
             .build()?;
 
-        // Esegui il kernel
+        // set strcut parameters
+        self.buffer = Some(buffer);
+        self.kernel = Some(kernel);
+
+        Ok(())
+    }
+
+    fn compute(&self) -> Result<Vec<u8>> {
+        let params = self
+            .params
+            .as_ref()
+            .expect("Computation parameters not initialized.");
+
+        let buffer = self.buffer.as_ref().expect("Buffer not initialized.");
+
+        let kernel = self.kernel.as_ref().expect("Kernel not initialized.");
+
+        // execute the kernel
         unsafe {
             kernel.enq()?;
         }
 
         // Leggi i risultati dal dispositivo
-        let mut result_vec = vec![0u8; (width * height) as usize];
+        let mut result_vec = vec![0u8; (params.width * params.height) as usize];
         buffer.read(&mut result_vec).enq()?;
 
-        let elapsed_time = start_time.elapsed();
-
-        Ok(ComputationResult {
-            values: result_vec,
-            elapsed_time,
-        })
+        Ok(result_vec)
     }
 
     fn dump_info(&self) -> Result<()> {

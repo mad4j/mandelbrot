@@ -1,71 +1,70 @@
 use anyhow::Result;
 
 use num::Complex;
-use std::time::Instant;
 
-use crate::mandelbrot_utils::{FieldMap, ComputationStrategy, ComputationResult};
+use crate::{
+    field_map::FieldMap,
+    strategy::{ComputationParams, ComputationStrategy},
+};
 
-pub struct MandelbrotMono {}
-
+pub struct MandelbrotMono {
+    params: Option<ComputationParams>,
+}
 
 impl MandelbrotMono {
     pub fn new() -> Self {
-        MandelbrotMono {}
+        MandelbrotMono { params: None }
+    }
+
+    #[inline(always)]
+    fn escape_time(c: Complex<f32>, max_iters: usize) -> u8 {
+        let mut z = Complex::new(0.0, 0.0);
+        let mut i = 0;
+        while i < max_iters && z.norm_sqr() <= 4.0 {
+            z = z * z + c;
+            i += 1;
+        }
+        ((max_iters - i) & 0xff) as u8
     }
 }
 
-
 impl ComputationStrategy for MandelbrotMono {
-
-    fn compute(
-        &self,
-        width: u32,
-        height: u32,
-        max_iters: usize,
-        upper_left: Complex<f32>,
-        lower_right: Complex<f32>,
-    ) -> Result<ComputationResult> {
-        compute(width, height, max_iters, upper_left, lower_right)
-    }
-
+    /// This function is called to dump the computation context info.
     fn dump_info(&self) -> Result<()> {
         println!("MandelbrotMono computation info: Single core computation.");
         Ok(())
     }
-}
 
-#[inline(always)]
-fn escape_time(c: Complex<f32>, max_iters: usize) -> u8 {
-    let mut z = Complex::new(0.0, 0.0);
-    let mut i = 0;
-    while i < max_iters && z.norm_sqr() <= 4.0 {
-        z = z * z + c;
-        i += 1;
+    /// This function is called to initialize the computation context.
+    fn init(&mut self, params: &ComputationParams) -> Result<()> {
+        self.params = Some(params.clone());
+        Ok(())
     }
-    ((max_iters - i) & 0xff) as u8
-}
 
-#[inline(always)]
-fn compute(
-    width: u32,
-    height: u32,
-    max_iters: usize,
-    upper_left: Complex<f32>,
-    lower_right: Complex<f32>,
-) -> Result<ComputationResult> {
-    let field_map = FieldMap::new(upper_left, lower_right, width as usize, height as usize);
+    /// This function is called to setup the computation context.
+    fn setup(&mut self) -> Result<()> {
+        Ok(())
+    }
 
-    let start_time = Instant::now();
+    /// This function is called to compute the Mandelbrot set.
+    fn compute(&self) -> Result<Vec<u8>> {
+        let params = self
+            .params
+            .as_ref()
+            .expect("Computation parameters not initialized.");
 
-    let values: Vec<u8> = (0..field_map.get_limit())
-        .into_iter()
-        .map(|i| escape_time(field_map.get_point(i), max_iters))
-        .collect();
+        let field_map = FieldMap::new(
+            params.upper_left,
+            params.lower_right,
+            params.width as usize,
+            params.height as usize,
+        );
 
-    let elapsed_time = start_time.elapsed();
+        let values: Vec<u8> = (0..field_map.get_limit())
+            .into_iter()
+            .map(|i| Self::escape_time(field_map.get_point(i), params.max_iters))
+            .collect();
 
-    Ok(ComputationResult {
-        values,
-        elapsed_time,
-    })
+        Ok(values)
+    }
 }

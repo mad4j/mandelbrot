@@ -1,11 +1,12 @@
 mod compute_mono;
 mod compute_ocl;
 mod compute_rayon;
-mod mandelbrot_utils;
+mod field_map;
+mod strategy;
 
 use clap::{Parser, Subcommand};
 use compute_mono::MandelbrotMono;
-use mandelbrot_utils::ComputationContext;
+use strategy::{ComputationContext, ComputationParams, ComputationStrategy};
 
 use std::time::Instant;
 
@@ -14,7 +15,6 @@ use compute_ocl::MandelbrotOcl;
 use compute_rayon::MandelbrotRayon;
 use image::{GrayImage, ImageBuffer};
 use num::Complex;
-
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -48,32 +48,51 @@ fn main() -> Result<()> {
     let lower_right = Complex::<f32>::new(-1.00, 0.20);
 
     // create the computation context based on the command line argument
-    let context = match &cli.command {
+    let mut context = match &cli.command {
         Commands::Mono {} => ComputationContext::new(Box::new(MandelbrotMono::new())),
         Commands::Ocl {} => ComputationContext::new(Box::new(MandelbrotOcl::new())),
         Commands::Rayon {} => ComputationContext::new(Box::new(MandelbrotRayon::new())),
     };
 
     // initialize the computation context
+    context.dump_info().expect("Failed to dump strategy info");
+
+    // take the start time
+    let start_time = Instant::now();
+
     context
-        .dump_info()
-        .expect("Failed to dump strategy info");
+        .init(&ComputationParams::new(
+            width,
+            height,
+            max_iters,
+            upper_left,
+            lower_right,
+        ))
+        .expect("Failed to initialize the computation context");
+
+    // setup the computation context
+    context
+        .setup()
+        .expect("Failed to setup the computation context");
+
+    let setup_time = start_time.elapsed();
 
     // take the start time
     let start_time = Instant::now();
 
     // perform the computation
-    let result = context
-        .compute(width, height, max_iters, upper_left, lower_right)
+    let values = context
+        .compute()
         .expect("Failed to compute the Mandelbrot set");
 
+    let core_time = start_time.elapsed();
+
     // print the elapsed time for the computation
-    let elapsed_time = start_time.elapsed();
-    println!("Total Elapsed time: {:.02?}", elapsed_time);
-    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
-    
+    println!("Setup time: {:.02?}", setup_time);
+    println!("Core  time: {:.02?}", core_time);
+
     // create and save the image
-    let image: GrayImage = ImageBuffer::from_raw(width as u32, height as u32, result.values)
+    let image: GrayImage = ImageBuffer::from_raw(width as u32, height as u32, values)
         .expect("Failed to create image buffer");
 
     image.save("mandelbrot.png")?;
