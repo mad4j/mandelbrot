@@ -1,22 +1,72 @@
 use anyhow::Result;
 use num::Complex;
 
-pub trait MandelbrotComputation {
+pub trait ComputationStrategy {
     fn compute(
+        &self,
         width: u32,
         height: u32,
         max_iters: usize,
         upper_left: Complex<f32>,
         lower_right: Complex<f32>,
-    ) -> Result<MandelbrotComputationResult>;
+    ) -> Result<ComputationResult>;
 
-    fn dump_info() -> Result<()>;
+    fn dump_info(&self) -> Result<()>;
 }
 
-pub struct MandelbrotComputationResult {
+
+
+pub struct ComputationResult {
     pub values: Vec<u8>,
     pub elapsed_time: std::time::Duration,
 }
+
+pub struct ComputationContext {
+    strategy: Box<dyn ComputationStrategy>
+}
+
+impl ComputationContext {
+
+    pub fn new(strategy: Box<dyn ComputationStrategy>) -> Self {
+        ComputationContext { strategy }
+    }
+
+    pub fn compute(
+        &self,
+        width: u32,
+        height: u32,
+        max_iters: usize,
+        upper_left: Complex<f32>,
+        lower_right: Complex<f32>,
+    ) -> Result<ComputationResult> {
+        self.strategy.compute(width, height, max_iters, upper_left, lower_right)
+    }
+    
+    pub fn dump_info(&self) -> Result<()> {
+        self.strategy.dump_info()?;
+        Ok(())
+    }
+}
+
+impl ComputationStrategy for ComputationContext {
+
+    fn compute(
+        &self,
+        width: u32,
+        height: u32,
+        max_iters: usize,
+        upper_left: Complex<f32>,
+        lower_right: Complex<f32>,
+    ) -> Result<ComputationResult> {
+        self.strategy.compute(width, height, max_iters, upper_left, lower_right)
+    }
+    
+    fn dump_info(&self) -> Result<()> {
+        self.strategy.dump_info()?;
+        Ok(())
+    }
+}
+
 
 pub struct FieldMap {
     pub re_resolution: usize,

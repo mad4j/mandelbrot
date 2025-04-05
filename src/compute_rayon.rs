@@ -5,22 +5,31 @@ use anyhow::Result;
 use rayon::prelude::*;
 use std::time::Instant;
 
-use crate::mandelbrot_utils::{FieldMap, MandelbrotComputation, MandelbrotComputationResult};
+use crate::mandelbrot_utils::{FieldMap, ComputationStrategy, ComputationResult};
 
 pub struct MandelbrotRayon {}
 
-impl MandelbrotComputation for MandelbrotRayon {
+
+impl MandelbrotRayon {
+    pub fn new() -> Self {
+        MandelbrotRayon {}
+    }
+}
+
+
+impl ComputationStrategy for MandelbrotRayon {
     fn compute(
+        &self,
         width: u32,
         height: u32,
         max_iters: usize,
         upper_left: Complex<f32>,
         lower_right: Complex<f32>,
-    ) -> Result<MandelbrotComputationResult> {
+    ) -> Result<ComputationResult> {
         compute(width, height, max_iters, upper_left, lower_right)
     }
 
-    fn dump_info() -> Result<()> {
+    fn dump_info(&self) -> Result<()> {
         println!("MandelbrotRayon computation info: Parallelized using Rayon.");
         Ok(())
     }
@@ -44,7 +53,7 @@ fn compute(
     max_iters: usize,
     upper_left: Complex<f32>,
     lower_right: Complex<f32>,
-) -> Result<MandelbrotComputationResult> {
+) -> Result<ComputationResult> {
     let field_map = FieldMap::new(upper_left, lower_right, width as usize, height as usize);
 
     let start_time = Instant::now();
@@ -56,7 +65,7 @@ fn compute(
 
     let elapsed_time = start_time.elapsed();
 
-    Ok(MandelbrotComputationResult {
+    Ok(ComputationResult {
         values,
         elapsed_time,
     })

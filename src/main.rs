@@ -5,7 +5,7 @@ mod mandelbrot_utils;
 
 use clap::{Parser, Subcommand};
 use compute_mono::MandelbrotMono;
-use mandelbrot_utils::MandelbrotComputation;
+use mandelbrot_utils::ComputationContext;
 
 use std::time::Instant;
 
@@ -14,6 +14,7 @@ use compute_ocl::MandelbrotOcl;
 use compute_rayon::MandelbrotRayon;
 use image::{GrayImage, ImageBuffer};
 use num::Complex;
+
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -32,55 +33,51 @@ enum Commands {
     Rayon {},
 }
 
-fn processing_values<T: MandelbrotComputation>(
-    width: u32,
-    height: u32,
-    max_iters: usize,
-    upper_left: Complex<f32>,
-    lower_right: Complex<f32>,
-) -> Result<()> {
-    T::dump_info()?;
-
-    let start_time = Instant::now();
-
-    let result = T::compute(width, height, max_iters, upper_left, lower_right)?;
-
-    let elapsed_time = start_time.elapsed();
-    println!("Total Elapsed time: {:.02?}", elapsed_time);
-    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
-
-    // Crea e salva l'immagine
-    let image: GrayImage =
-        ImageBuffer::from_raw(width as u32, height as u32, result.values).unwrap();
-
-    image.save("mandelbrot.png")?;
-
-    Ok(())
-}
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    // Dimensioni dell'immagine
+    // image dimensions
     let width = 4000;
     let height = 3000;
+
+    // max iterations
     let max_iters = 255;
 
-    // Area del piano complesso da visualizzare
+    // area of the complex plane to visualize
     let upper_left = Complex::<f32>::new(-1.20, 0.35);
     let lower_right = Complex::<f32>::new(-1.00, 0.20);
 
-    match &cli.command {
-        Commands::Mono {} => {
-            processing_values::<MandelbrotMono>(width, height, max_iters, upper_left, lower_right)?
-        }
-        Commands::Ocl {} => {
-            processing_values::<MandelbrotOcl>(width, height, max_iters, upper_left, lower_right)?
-        }
-        Commands::Rayon {} => {
-            processing_values::<MandelbrotRayon>(width, height, max_iters, upper_left, lower_right)?
-        }
-    }
+    // create the computation context based on the command line argument
+    let context = match &cli.command {
+        Commands::Mono {} => ComputationContext::new(Box::new(MandelbrotMono::new())),
+        Commands::Ocl {} => ComputationContext::new(Box::new(MandelbrotOcl::new())),
+        Commands::Rayon {} => ComputationContext::new(Box::new(MandelbrotRayon::new())),
+    };
 
+    // initialize the computation context
+    context
+        .dump_info()
+        .expect("Failed to dump strategy info");
+
+    // take the start time
+    let start_time = Instant::now();
+
+    // perform the computation
+    let result = context
+        .compute(width, height, max_iters, upper_left, lower_right)
+        .expect("Failed to compute the Mandelbrot set");
+
+    // print the elapsed time for the computation
+    let elapsed_time = start_time.elapsed();
+    println!("Total Elapsed time: {:.02?}", elapsed_time);
+    println!("Core  Elapsed time: {:.02?}", result.elapsed_time);
+    
+    // create and save the image
+    let image: GrayImage = ImageBuffer::from_raw(width as u32, height as u32, result.values)
+        .expect("Failed to create image buffer");
+
+    image.save("mandelbrot.png")?;
+
+    // that's all folks
     Ok(())
 }

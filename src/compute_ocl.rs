@@ -8,18 +8,27 @@ use ocl::{
     Device, Platform, ProQue,
 };
 
-use crate::mandelbrot_utils::{MandelbrotComputation, MandelbrotComputationResult};
+use crate::mandelbrot_utils::{ComputationStrategy, ComputationResult};
 
 pub struct MandelbrotOcl {}
 
-impl MandelbrotComputation for MandelbrotOcl {
+
+impl MandelbrotOcl {
+    pub fn new() -> Self {
+        MandelbrotOcl {}
+    }
+}
+
+
+impl ComputationStrategy for MandelbrotOcl {
     fn compute(
+        &self,
         width: u32,
         height: u32,
         max_iters: usize,
         upper_left: Complex<f32>,
         lower_right: Complex<f32>,
-    ) -> Result<MandelbrotComputationResult> {
+    ) -> Result<ComputationResult> {
         // Convert the parameters to OpenCL types
         let width = width as i32;
         let height = height as i32;
@@ -104,13 +113,13 @@ impl MandelbrotComputation for MandelbrotOcl {
 
         let elapsed_time = start_time.elapsed();
 
-        Ok(MandelbrotComputationResult {
+        Ok(ComputationResult {
             values: result_vec,
             elapsed_time,
         })
     }
 
-    fn dump_info() -> Result<()> {
+    fn dump_info(&self) -> Result<()> {
         println!("MandelbrotRayon computation info: Parallelized using OpenCL.");
 
         let platforms = Platform::list();
