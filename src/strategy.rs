@@ -11,7 +11,6 @@ pub struct ComputationParams {
     pub lower_right: Complex<f32>,
 }
 
-
 pub trait ComputationStrategy {
     fn dump_info(&self) -> Result<()>;
 
