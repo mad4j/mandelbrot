@@ -20,6 +20,31 @@ use num::Complex;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
+
+    /// the width of the image
+    #[arg(short='w', long, default_value_t = 4000)]
+    image_width: u32,
+
+    /// the height of the image
+    #[arg(short='h', long, default_value_t = 3000)]
+    image_height: u32,
+
+    /// the number of iterations to compute
+    #[arg(short='i', long, default_value_t = 255)]
+    max_iters: usize,
+
+    /// the upper left corner of the area to visualize
+    #[arg(short='u', long, default_value = "-1.20+0.35i")]
+    upper_left: Complex<f64>,
+
+    /// the lower right corner of the area to visualize
+    #[arg(short='l', long, default_value = "-1.00+0.20i")]
+    lower_right: Complex<f64>,
+
+    /// the name of the output file
+    #[arg(short, long, default_value = "mandelbrot.png")]
+    file_name: String,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -45,13 +70,13 @@ fn main() -> Result<()> {
     // set up the computation parameters
     let params = ComputationParams {
         // image dimensions
-        width: 4000,
-        height: 3000,
+        width: cli.image_width,
+        height: cli.image_height,
         // max iterations
-        max_iters: 255,
+        max_iters: cli.max_iters,
         // area of the complex plane to visualize
-        upper_left: Complex::new(-1.20, 0.35),
-        lower_right: Complex::new(-1.00, 0.20),
+        upper_left: cli.upper_left,
+        lower_right: cli.lower_right,
     };
 
     // create the computation context based on the command line argument
@@ -97,7 +122,7 @@ fn main() -> Result<()> {
     let image: GrayImage = ImageBuffer::from_raw(params.width as u32, params.height as u32, values)
         .expect("Failed to create image buffer");
 
-    image.save("mandelbrot.png")?;
+    image.save(cli.file_name)?;
 
     // that's all folks
     Ok(())
