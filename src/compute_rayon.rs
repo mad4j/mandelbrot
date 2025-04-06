@@ -52,7 +52,7 @@ impl ComputationStrategy for MandelbrotRayon {
 }
 
 #[inline(always)]
-fn escape_time(c: Complex<f32>, max_iters: usize) -> u8 {
+fn escape_time(c: Complex<f64>, max_iters: usize) -> u8 {
     let mut z = Complex::new(0.0, 0.0);
     let mut i = 0;
     while i < max_iters && z.norm_sqr() <= 4.0 {
@@ -67,8 +67,8 @@ fn compute(
     width: u32,
     height: u32,
     max_iters: usize,
-    upper_left: Complex<f32>,
-    lower_right: Complex<f32>,
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
 ) -> Result<Vec<u8>> {
     let field_map = FieldMap::new(upper_left, lower_right, width as usize, height as usize);
 

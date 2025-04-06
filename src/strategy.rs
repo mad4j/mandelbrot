@@ -7,8 +7,8 @@ pub struct ComputationParams {
     pub width: u32,
     pub height: u32,
     pub max_iters: usize,
-    pub upper_left: Complex<f32>,
-    pub lower_right: Complex<f32>,
+    pub upper_left: Complex<f64>,
+    pub lower_right: Complex<f64>,
 }
 
 pub trait ComputationStrategy {

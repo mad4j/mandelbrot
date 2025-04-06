@@ -59,25 +59,25 @@ impl ComputationStrategy for MandelbrotOcl {
                 int width,
                 int height,
                 int max_iters,
-                float xmin,
-                float xmax,
-                float ymin,
-                float ymax
+                double xmin,
+                double xmax,
+                double ymin,
+                double ymax
             ) {
                 int x = get_global_id(0);
                 int y = get_global_id(1);
                 
                 if (x >= width || y >= height) return;
 
-                float cx = xmin + (xmax - xmin) * x / width;
-                float cy = ymin + (ymax - ymin) * y / height;
+                double cx = xmin + (xmax - xmin) * x / width;
+                double cy = ymin + (ymax - ymin) * y / height;
 
-                float zx = 0.0f;
-                float zy = 0.0f;
+                double zx = 0.0f;
+                double zy = 0.0f;
                 int i = 0;
                 
                 while (zx * zx + zy * zy <= 4.0f && i < max_iters) {
-                    float xtemp = zx * zx - zy * zy + cx;
+                    double xtemp = zx * zx - zy * zy + cx;
                     zy = 2.0f * zx * zy + cy;
                     zx = xtemp;
                     i++;

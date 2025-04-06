@@ -17,7 +17,7 @@ impl MandelbrotMono {
     }
 
     #[inline(always)]
-    fn escape_time(c: Complex<f32>, max_iters: usize) -> u8 {
+    fn escape_time(c: Complex<f64>, max_iters: usize) -> u8 {
         let mut z = Complex::new(0.0, 0.0);
         let mut i = 0;
         while i < max_iters && z.norm_sqr() <= 4.0 {
