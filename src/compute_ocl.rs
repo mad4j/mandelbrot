@@ -2,7 +2,7 @@ use human_bytes::human_bytes;
 
 use anyhow::Result;
 use ocl::{
-    core::{default_platform, DeviceInfo, DeviceInfoResult},
+    core::{DeviceInfo, DeviceInfoResult},
     Device, Platform, ProQue,
 };
 
