@@ -29,7 +29,11 @@ enum Commands {
     /// computing with a single core
     Mono {},
     /// computing with OpenCL
-    Ocl {},
+    Ocl {
+        /// OpenCL platform index
+        #[arg(short, long, default_value_t = 0)]
+        platform: usize,
+    },
     /// computing with Rayon
     Rayon {},
 }
@@ -53,7 +57,7 @@ fn main() -> Result<()> {
     // create the computation context based on the command line argument
     let mut context = match &cli.command {
         Commands::Mono {} => ComputationContext::new(Box::new(MandelbrotMono::new())),
-        Commands::Ocl {} => ComputationContext::new(Box::new(MandelbrotOcl::new())),
+        Commands::Ocl { platform } => ComputationContext::new(Box::new(MandelbrotOcl::new(*platform))),
         Commands::Rayon {} => ComputationContext::new(Box::new(MandelbrotRayon::new())),
     };
 

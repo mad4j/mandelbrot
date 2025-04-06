@@ -32,6 +32,7 @@ impl ComputationStrategy for MandelbrotMono {
     /// This function is called to dump the computation context info.
     fn dump_info(&self) -> Result<()> {
         println!("MandelbrotMono computation info: Single core computation.");
+        println!("------------------------------------------------------------");
         Ok(())
     }
 

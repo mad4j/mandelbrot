@@ -9,14 +9,16 @@ use ocl::{
 use crate::strategy::{ComputationParams, ComputationStrategy};
 
 pub struct MandelbrotOcl {
+    platform: usize,
     params: Option<ComputationParams>,
     buffer: Option<ocl::Buffer<u8>>,
     kernel: Option<ocl::Kernel>,
 }
 
 impl MandelbrotOcl {
-    pub fn new() -> Self {
+    pub fn new(platform: usize) -> Self {
         MandelbrotOcl {
+            platform,
             params: None,
             buffer: None,
             kernel: None,
@@ -88,7 +90,7 @@ impl ComputationStrategy for MandelbrotOcl {
         // initialize the OpenCL environment
         let pro_que = ProQue::builder()
             //.platform(Platform::default())
-            .platform(Platform::list()[0])
+            .platform(Platform::list()[self.platform])
             .src(kernel_src)
             .dims((width as usize, height as usize))
             .build()?;
@@ -140,6 +142,7 @@ impl ComputationStrategy for MandelbrotOcl {
 
     fn dump_info(&self) -> Result<()> {
         println!("MandelbrotRayon computation info: Parallelized using OpenCL.");
+        println!("------------------------------------------------------------");
 
         let platforms = Platform::list();
 
@@ -172,6 +175,9 @@ impl ComputationStrategy for MandelbrotOcl {
                 );
             }
         }
+
+        println!("Selected Platform #{}", self.platform);
+        println!("------------------------------------------------------------");
 
         Ok(())
     }

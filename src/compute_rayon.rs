@@ -22,6 +22,7 @@ impl MandelbrotRayon {
 impl ComputationStrategy for MandelbrotRayon {
     fn dump_info(&self) -> Result<()> {
         println!("MandelbrotRayon computation info: Parallelized using Rayon.");
+        println!("------------------------------------------------------------");
         Ok(())
     }
 
