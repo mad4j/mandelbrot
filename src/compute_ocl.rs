@@ -2,7 +2,7 @@ use human_bytes::human_bytes;
 
 use anyhow::Result;
 use ocl::{
-    core::{DeviceInfo, DeviceInfoResult},
+    core::{default_platform, DeviceInfo, DeviceInfoResult},
     Device, Platform, ProQue,
 };
 
@@ -87,7 +87,8 @@ impl ComputationStrategy for MandelbrotOcl {
 
         // initialize the OpenCL environment
         let pro_que = ProQue::builder()
-            .platform(Platform::default())
+            //.platform(Platform::default())
+            .platform(Platform::list()[0])
             .src(kernel_src)
             .dims((width as usize, height as usize))
             .build()?;
@@ -144,51 +145,27 @@ impl ComputationStrategy for MandelbrotOcl {
 
         for (p_idx, platform) in platforms.iter().enumerate() {
             println!("Platform #{}: {}", p_idx, platform.name()?);
-            println!("  Vendor: {}", platform.vendor()?);
-            println!("  Version: {} {}", platform.version()?, platform.profile()?);
+            println!("  Profile: {} {}", platform.version()?, platform.profile()?);
 
             let devices = Device::list_all(platform)?;
 
             for (d_idx, device) in devices.iter().enumerate() {
-                println!("  Device {}: {}", d_idx, device.name()?);
-                println!("    Vendor: {}", device.vendor()?);
-                println!("    Version: {}", device.version()?);
-                println!("    Type: {}", device.info(DeviceInfo::Type)?);
-                println!("    Profile: {}", device.info(DeviceInfo::Profile)?);
+                println!("  Device {}: [{}] {}", d_idx, device.info(DeviceInfo::Type)?, device.name()?);
                 println!(
-                    "    Max Compute Units: {}",
-                    device.info(DeviceInfo::MaxComputeUnits)?
-                );
-                println!(
-                    "    Max Work Group Size: {}",
-                    device.info(DeviceInfo::MaxWorkGroupSize)?
-                );
-                println!(
-                    "    Max Work Item Dimensions: {}",
-                    device.info(DeviceInfo::MaxWorkItemDimensions)?
-                );
-                println!(
-                    "    Max Work Item Sizes: {}",
-                    device.info(DeviceInfo::MaxWorkItemSizes)?
-                );
-                println!(
-                    "    Max Clock Frequency: {}",
+                    "    Max Compute Units: {} @ {}",
+                    device.info(DeviceInfo::MaxComputeUnits)?,
                     device.info(DeviceInfo::MaxClockFrequency)?
                 );
                 println!(
-                    "    Max Memory Allocation Size: {}",
-                    human_bytes(
-                        extract_u64(device.info(DeviceInfo::MaxMemAllocSize)?).unwrap_or(0) as f64
-                    )
+                    "    Max Work Group Size: {} x {}",
+                    device.info(DeviceInfo::MaxWorkGroupSize)?,
+                    device.info(DeviceInfo::MaxWorkItemSizes)?
                 );
                 println!(
-                    "    Global Memory Size: {}",
+                    "    Memory Size: {} (global) {} (local)",
                     human_bytes(
                         extract_u64(device.info(DeviceInfo::GlobalMemSize)?).unwrap_or(0) as f64
-                    )
-                );
-                println!(
-                    "    Local Memory Size: {}",
+                    ),
                     human_bytes(
                         extract_u64(device.info(DeviceInfo::LocalMemSize)?).unwrap_or(0) as f64
                     )
