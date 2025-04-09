@@ -141,7 +141,7 @@ impl ComputationStrategy for MandelbrotOcl {
     }
 
     fn dump_info(&self) -> Result<()> {
-        println!("MandelbrotRayon computation info: Parallelized using OpenCL.");
+        println!("MandelbrotOCL computation info: Parallelized using OpenCL.");
         println!("------------------------------------------------------------");
 
         let platforms = Platform::list();

@@ -2,6 +2,16 @@
 name = "mandelbrot"
 version = "0.1.0"
 edition = "2021"
+authors = ["Daniele Olmisani <daniele.olmisani@gmail.com>"]
+description = "A Mandelbrot set generator written in Rust."
+license = "GPL-3.0"
+license-file = "LICENSE"
+repository = "https://github.com/mad4j/mandelbrot"
+homepage = "https://github.com/mad4j/mandelbrot"
+documentation = "https://docs.rs/mandelbrot"
+keywords = ["mandelbrot", "fractal", "graphics", "rust"]
+categories = ["graphics", "science", "visualization"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
