@@ -5,7 +5,6 @@ edition = "2021"
 authors = ["Daniele Olmisani <daniele.olmisani@gmail.com>"]
 description = "A Mandelbrot set generator written in Rust."
 license = "GPL-3.0"
-license-file = "LICENSE"
 repository = "https://github.com/mad4j/mandelbrot"
 homepage = "https://github.com/mad4j/mandelbrot"
 documentation = "https://docs.rs/mandelbrot"
