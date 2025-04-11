@@ -30,7 +30,7 @@ struct Cli {
     image_height: u32,
 
     /// the number of iterations to compute
-    #[arg(short='i', long, default_value_t = 255)]
+    #[arg(short='i', long, default_value_t = 256)]
     max_iters: usize,
 
     /// the upper left corner of the area to visualize
@@ -73,7 +73,7 @@ fn main() -> Result<()> {
         width: cli.image_width,
         height: cli.image_height,
         // max iterations
-        max_iters: cli.max_iters,
+        max_iters: cli.max_iters-1,
         // area of the complex plane to visualize
         upper_left: cli.upper_left,
         lower_right: cli.lower_right,
@@ -114,15 +114,32 @@ fn main() -> Result<()> {
             .expect("Failed to compute the Mandelbrot set")
     });
 
+    // initialize post-processing timer    
+    let mut post_time = Duration::ZERO;
+
+    timeit!(&mut post_time, {
+        // Normalize values if max_iters is less than 255
+        let normalized_values: Vec<u8> = if cli.max_iters < 255 {
+            values
+                .iter()
+                .map(|&v| ((v as f64 / cli.max_iters as f64) * 255.0).round() as u8)
+                .collect()
+        } else {
+            values
+        };
+
+        // create and save the image
+        let image: GrayImage = ImageBuffer::from_raw(params.width as u32, params.height as u32, normalized_values)
+            .expect("Failed to create image buffer");
+
+        image.save(cli.file_name)?;
+    });
+
     // print the elapsed time for the computation
     println!("Setup time: {:.02?}", setup_time);
     println!("Core  time: {:.02?}", core_time);
-
-    // create and save the image
-    let image: GrayImage = ImageBuffer::from_raw(params.width as u32, params.height as u32, values)
-        .expect("Failed to create image buffer");
-
-    image.save(cli.file_name)?;
+    println!("Post  time: {:.02?}", post_time);
+    println!("Total time: {:.02?}", setup_time + core_time + post_time);
 
     // that's all folks
     Ok(())
