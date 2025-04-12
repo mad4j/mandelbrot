@@ -3,9 +3,6 @@ mod compute_ocl;
 mod compute_rayon;
 mod field_map;
 mod strategy;
-mod timeit;
-
-use std::time::Duration;
 
 use clap::{Parser, Subcommand};
 use compute_mono::MandelbrotMono;
@@ -16,7 +13,7 @@ use compute_ocl::MandelbrotOcl;
 use compute_rayon::MandelbrotRayon;
 use image::{GrayImage, ImageBuffer};
 use num::Complex;
-
+use howlast::howlast;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -89,10 +86,7 @@ fn main() -> Result<()> {
     // dump computation strategy info
     context.dump_info().expect("Failed to dump strategy info");
 
-    // initialize setup timer
-    let mut setup_time = Duration::ZERO;
-
-    timeit!(&mut setup_time, {
+    howlast!(setup_time => {
         // initialize the computation context
         context
             .init(&params)
@@ -104,21 +98,15 @@ fn main() -> Result<()> {
             .expect("Failed to setup the computation context");
     });
 
-    // initialize computation timer
-    let mut core_time = Duration::ZERO;
-
-    let values = timeit!(&mut core_time, {
-        // perform the computation
+    howlast!(core_time, values => {
+        // perform the core computation
         context
             .compute()
             .expect("Failed to compute the Mandelbrot set")
     });
 
-    // initialize post-processing timer    
-    let mut post_time = Duration::ZERO;
-
-    timeit!(&mut post_time, {
-        // Normalize values if max_iters is less than 255
+    howlast!(post_time => {
+        // normalize values if max_iters is less than 255
         let normalized_values: Vec<u8> = if cli.max_iters < 255 {
             values
                 .iter()
