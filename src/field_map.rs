@@ -43,4 +43,15 @@ impl FieldMap {
     pub fn get_limit(&self) -> usize {
         self.re_resolution * self.im_resolution
     }
+
+    #[inline(always)]
+    pub fn escape_time(c: Complex<f64>, max_iters: usize) -> u8 {
+        let mut z = Complex::new(0.0, 0.0);
+        let mut i = 0;
+        while i < max_iters && z.norm_sqr() <= 4.0 {
+            z = z * z + c;
+            i += 1;
+        }
+        ((max_iters - i) & 0xff) as u8
+    }
 }
