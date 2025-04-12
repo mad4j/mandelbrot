@@ -62,7 +62,6 @@ impl ComputationStrategy for MandelbrotMono {
         );
 
         let values: Vec<u8> = (0..field_map.get_limit())
-            .into_iter()
             .map(|i| Self::escape_time(field_map.get_point(i), params.max_iters))
             .collect();
 

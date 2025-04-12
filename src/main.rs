@@ -129,7 +129,7 @@ fn main() -> Result<()> {
         };
 
         // create and save the image
-        let image: GrayImage = ImageBuffer::from_raw(params.width as u32, params.height as u32, normalized_values)
+        let image: GrayImage = ImageBuffer::from_raw(params.width, params.height, normalized_values)
             .expect("Failed to create image buffer");
 
         image.save(cli.file_name)?;

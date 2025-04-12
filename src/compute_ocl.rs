@@ -102,9 +102,9 @@ impl ComputationStrategy for MandelbrotOcl {
         let kernel = pro_que
             .kernel_builder("mandelbrot")
             .arg(&buffer)
-            .arg(&width)
-            .arg(&height)
-            .arg(&max_iters)
+            .arg(width)
+            .arg(height)
+            .arg(max_iters)
             .arg(xmin)
             .arg(xmax)
             .arg(ymin)
