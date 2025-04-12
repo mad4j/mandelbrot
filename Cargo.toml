@@ -7,7 +7,6 @@ description = "A Mandelbrot set generator written in Rust."
 license = "GPL-3.0"
 repository = "https://github.com/mad4j/rustedbytes-mandelbrot"
 homepage = "https://github.com/mad4j/rustedbytes-mandelbrot"
-documentation = "https://docs.rs/rustedbytes-mandelbrot"
 keywords = ["mandelbrot", "fractal", "graphics", "rust"]
 categories = ["graphics", "science", "visualization"]
 readme = "README.md"
