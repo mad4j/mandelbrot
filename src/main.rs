@@ -11,31 +11,31 @@ use strategy::{ComputationContext, ComputationParams, ComputationStrategy};
 use anyhow::Result;
 use compute_ocl::MandelbrotOcl;
 use compute_rayon::MandelbrotRayon;
+use howlast::howlast;
 use image::{GrayImage, ImageBuffer};
 use num::Complex;
-use howlast::howlast;
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-
     /// the width of the image
-    #[arg(short='w', long, default_value_t = 4000)]
+    #[arg(short = 'w', long, default_value_t = 4000)]
     image_width: u32,
 
     /// the height of the image
-    #[arg(short='h', long, default_value_t = 3000)]
+    #[arg(short = 'h', long, default_value_t = 3000)]
     image_height: u32,
 
     /// the number of iterations to compute
-    #[arg(short='i', long, default_value_t = 256)]
+    #[arg(short = 'i', long, default_value_t = 256)]
     max_iters: usize,
 
     /// the upper left corner of the area to visualize
-    #[arg(short='u', long, default_value = "-1.20+0.35i")]
+    #[arg(short = 'u', long, default_value = "-1.20+0.35i")]
     upper_left: Complex<f64>,
 
     /// the lower right corner of the area to visualize
-    #[arg(short='l', long, default_value = "-1.00+0.20i")]
+    #[arg(short = 'l', long, default_value = "-1.00+0.20i")]
     lower_right: Complex<f64>,
 
     /// the name of the output file
@@ -61,7 +61,6 @@ enum Commands {
 }
 
 fn check_aspect_ration(params: &ComputationParams) {
-
     let w = (params.upper_left.re - params.lower_right.re).abs();
     let h = (params.upper_left.im - params.lower_right.im).abs();
     let area_aspect_ratio = w / h;
@@ -72,7 +71,10 @@ fn check_aspect_ration(params: &ComputationParams) {
             "Warning: The aspect ratio of the complex plane area ({:.2}) does not match the image aspect ratio ({:.2}).",
             area_aspect_ratio, image_aspect_ratio
         );
-        println!("         Expected image height: {:.0}.", params.width as f64 / area_aspect_ratio);
+        println!(
+            "         Expected image height: {:.0}.",
+            params.width as f64 / area_aspect_ratio
+        );
     }
 }
 
@@ -86,7 +88,7 @@ fn main() -> Result<()> {
         width: cli.image_width,
         height: cli.image_height,
         // max iterations
-        max_iters: cli.max_iters-1,
+        max_iters: cli.max_iters - 1,
         // area of the complex plane to visualize
         upper_left: cli.upper_left,
         lower_right: cli.lower_right,
@@ -95,7 +97,9 @@ fn main() -> Result<()> {
     // create the computation context based on the command line argument
     let mut context = match &cli.command {
         Commands::Mono {} => ComputationContext::new(Box::new(MandelbrotMono::new())),
-        Commands::Ocl { platform } => ComputationContext::new(Box::new(MandelbrotOcl::new(*platform))),
+        Commands::Ocl { platform } => {
+            ComputationContext::new(Box::new(MandelbrotOcl::new(*platform)))
+        }
         Commands::Rayon {} => ComputationContext::new(Box::new(MandelbrotRayon::new())),
     };
 

@@ -133,7 +133,7 @@ impl ComputationStrategy for MandelbrotOcl {
             kernel.enq()?;
         }
 
-        // Leggi i risultati dal dispositivo
+        // retrive results from the device
         let mut result_vec = vec![0u8; (params.width * params.height) as usize];
         buffer.read(&mut result_vec).enq()?;
 
@@ -153,7 +153,12 @@ impl ComputationStrategy for MandelbrotOcl {
             let devices = Device::list_all(platform)?;
 
             for (d_idx, device) in devices.iter().enumerate() {
-                println!("  Device {}: [{}] {}", d_idx, device.info(DeviceInfo::Type)?, device.name()?);
+                println!(
+                    "  Device {}: [{}] {}",
+                    d_idx,
+                    device.info(DeviceInfo::Type)?,
+                    device.name()?
+                );
                 println!(
                     "    Max Compute Units: {} @ {}",
                     device.info(DeviceInfo::MaxComputeUnits)?,
