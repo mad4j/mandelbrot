@@ -3,7 +3,7 @@ mod compute_ocl;
 mod compute_rayon;
 mod field_map;
 mod strategy;
-mod utils;
+mod timeit;
 
 use std::time::Duration;
 
