@@ -60,6 +60,22 @@ enum Commands {
     Rayon {},
 }
 
+fn check_aspect_ration(params: &ComputationParams) {
+
+    let w = (params.upper_left.re - params.lower_right.re).abs();
+    let h = (params.upper_left.im - params.lower_right.im).abs();
+    let area_aspect_ratio = w / h;
+    let image_aspect_ratio = params.width as f64 / params.height as f64;
+
+    if (area_aspect_ratio - image_aspect_ratio).abs() > 0.01 {
+        println!(
+            "Warning: The aspect ratio of the complex plane area ({:.2}) does not match the image aspect ratio ({:.2}).",
+            area_aspect_ratio, image_aspect_ratio
+        );
+        println!("         Expected image height: {:.0}.", params.width as f64 / area_aspect_ratio);
+    }
+}
+
 fn main() -> Result<()> {
     // parse command line arguments
     let cli = Cli::parse();
@@ -85,6 +101,9 @@ fn main() -> Result<()> {
 
     // dump computation strategy info
     context.dump_info().expect("Failed to dump strategy info");
+
+    // check the aspect ratio of the complex plane and the image
+    check_aspect_ration(&params);
 
     howlast!(setup_time => {
         // initialize the computation context
